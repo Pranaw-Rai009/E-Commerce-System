@@ -1,0 +1,21 @@
+{
+  "name": "e-commerce",
+  "version": "1.0.0",
+  "description": "An ecommerce app is a mobile or web software application that lets users buy and sell products or services over the internet.",
+  "keywords": [
+    "node",
+    "express",
+    "npm"
+  ],
+  "license": "ISC",
+  "author": "Dhanraj Rai",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.6"
+  }
+}
