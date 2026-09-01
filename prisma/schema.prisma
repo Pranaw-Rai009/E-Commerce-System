@@ -1,3 +1,5 @@
+// schema.prisma defines WHAT your database looks like (tables/models) and WHAT kind of client code to generate;
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
