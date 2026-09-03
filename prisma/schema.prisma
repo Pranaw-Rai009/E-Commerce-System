@@ -14,4 +14,104 @@ datasource db {
   provider = "postgresql"
 }
 
+// PascalCase Naming
+enum UserRole {
+  Customer
+  Seller
+}
+model User {
+  id    Int       @id @default(autoincrement())
+  fullName    String    
+  userName    String    @unique
+  mobileNo    String       @unique
+  email   String    @unique
+  password    String
+
+  profilePic    String?
+  role    UserRole @default(Customer)
+  productSold   Product[]
+  shippingAddress   String
+  review    Review[]
+  cart Cart[]
+  order   Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id    Int   @id @default(autoincrement())
+  title   String
+  prodImages    String?
+  description   String
+  stock   Int
+  price   Int
+  sellerId    Int
+  seller    User    @relation(fields: [sellerId], references: [id])
+  categoryId    Int
+  category    Category    @relation(fields: [categoryId], references: [id])
+  review  Review[]
+  cartItem  CartItems[]
+  orderItems    OrderItems[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id    Int   @id @default(autoincrement())
+  title   String
+  products    Product[]
+  createdAt   DateTime    @default(now())
+}
+
+model Review {
+  id    Int   @id @default(autoincrement())
+  description   String
+  productId   Int
+  prodReview   Product    @relation(fields: [productId], references: [id])
+  userId    Int
+  userRef   User    @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+}
+model Cart {
+  id    Int   @id @default(autoincrement())
+  userId    Int
+  user    User    @relation(fields: [userId], references: [id])
+  cartItem    CartItems[]
+}
+
+model CartItems {
+  id    Int   @id @default(autoincrement())
+  productId   Int
+  product   Product   @relation(fields: [productId], references: [id])
+  quantity    Int
+  cartId    Int
+  cart    Cart    @relation(fields: [cartId], references: [id])
+}
+
+enum deliveryStat {
+  PENDING
+  DELIVERED
+}
+model Order {
+  id    Int   @id @default(autoincrement())
+  userId    Int
+  user    User    @relation(fields: [userId], references: [id])
+  deliveryCharge    Float
+  subTotal    Float
+  totalAmount   Float
+  shippingAddress   String
+  status    deliveryStat    @default(PENDING)
+  createdAt   DateTime    @default(now())
+  orderItems OrderItems[]
+}
+
+model OrderItems {
+  id    Int   @id @default(autoincrement())
+  productId   Int
+  product   Product   @relation(fields: [productId], references: [id])
+  quantity    Int
+  price   Int
+  orderId   Int
+  order   Order   @relation(fields: [orderId], references: [id])
+}
 
