@@ -114,11 +114,11 @@ model Order {
   subTotal        Float
   totalAmount     Float
   shippingAddress String
-  status          deliveryStat  @default(PENDING)
+  status          DeliveryStat  @default(PENDING)
   createdAt       DateTime      @default(now())
   orderItems      OrderItems[]
-  paymentMetohd   paymentMetohd
-  paymentStatus   paymentStat   @default(PENDING)
+  paymentMetohd   PaymentMetohd
+  paymentStatus   PaymentStat   @default(PENDING)
 }
 
 model OrderItems {
