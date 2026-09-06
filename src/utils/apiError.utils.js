@@ -1,7 +1,5 @@
-import { error } from "node:console";
-import { stat } from "node:fs";
 
-class ApiError extends error {
+class ApiError extends Error {
     constructor(statusCode, message, errors = []) {
         super(message)
         this.message = message

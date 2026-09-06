@@ -1,8 +1,8 @@
 export const errroHandler = (err, req, res, next) => {
-    const successCode = err.successCode || 500
+    const statusCode = err.statusCode || 500
     const message = err.message || "Internal Server error"
 
-    res.staus(statusCode).json({
+    res.status(statusCode).json({
         success: false,
         Message: `Error message: ${message}`
     })
