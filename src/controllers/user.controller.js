@@ -1,8 +1,9 @@
 import { asyncHandler } from '../utils/asyncHandler.utils.js'
 import ApiError from '../utils/apiError.utils.js'
 import { prisma } from '../db/dbConnect.js'
-import { hashPassword } from '../utils/passwordHash.utils.js'
+import { hashPassword, isModified } from '../utils/passwordHash.utils.js'
 import { json } from 'express'
+import app from '../app.js'
 
 export const userRegister = asyncHandler(async (req, res) => {
     const { fullName, userName, mobileNo, email, password, profilePic, role, shippingAddress } = req.body
@@ -92,7 +93,63 @@ export const getAllCustomer = asyncHandler(async (req, res) => {
 
 
 export const updateUser = asyncHandler(async (req, res) => {
+    const userId = req.user.id
+    const userRole = req.user.role
     const { fullName, userName, mobileNo, email, profilePic, shippingAddress } = req.body
 
-    
+    if (userRole === Customer) {
+        const updateCustomer = await prisma.User.updateMany({
+            where: {
+                id: userId
+            },
+            data: {
+                fullName,
+                userName,
+                mobileNo,
+                email,
+                profilePic,
+                shippingAddress
+            }
+        })
+        res.status(200).json({ message: "Customer data updated", updateCustomer })
+    } else if (userRole === Seller) {
+        const updateSeller = await prisma.User.updateMany({
+            where: {
+                id: userId
+            },
+            data: {
+                fullName,
+                userName,
+                mobileNo,
+                email,
+                profilePic
+            }
+        })
+        res.status(200).json({ message: "Seller data updated", updateSeller })
+    }
+})
+
+export const updatePassword = asyncHandler(async (req, res) => {
+    const userId = req.user.id
+    const user = await prisma.User.findFirst({ where: { id: userId } })
+
+    const hashedPassword = user.password
+    const { oldPassword, newPassword1, newPassword2 } = req.body
+
+    const isCorrectOldPassword = await isModified(oldPassword, hashedPassword)
+
+    if (!isCorrectOldPassword) throw new ApiError(401, "Incorrect Password")
+
+    if (newPassword1.length < 12) throw new ApiError(400, "New password must be at least 12 character long")
+
+    if (newPassword2.length < 12) throw new ApiError(400, "New password must be at least 12 character long")
+
+    if (newPassword1 != newPassword2) throw new ApiError(400, "Password don't match")
+
+    const hashNewPassword = await hashPassword(newPassword1)
+    const update = await prisma.User.update({
+        where: { id: userId },
+        data: { password: hashNewPassword }
+    })
+    res.status(200).json({ message: "Password Updated" })
 })
