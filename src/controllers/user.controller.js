@@ -16,13 +16,13 @@ export const userRegister = asyncHandler(async (req, res) => {
     // User existence check
     const userExist = await prisma.User.findFirst({
         where: {
-            OR: [{ userName} , {email }, {mobileNo}]
+            OR: [{ userName }, { email }, { mobileNo }]
         }
     })
     if (userExist) {
         if (userExist.userName === userName) {  // checking if username is alredy taken
             throw new ApiError(409, "Username already taken!")
-        } else if(userExist.email === email){  //checking if email is already exist
+        } else if (userExist.email === email) {  //checking if email is already exist
             throw new ApiError(409, "User with this email already exist!")
         } else {
             throw new ApiError(409, "User with this mobile number already exist!")
@@ -32,39 +32,39 @@ export const userRegister = asyncHandler(async (req, res) => {
     // checking phone no validity
     if (mobileNo.length != 10) throw new ApiError(400, "Invalid moblie number")
 
-        // checking password length validity
+    // checking password length validity
     if (password.length < 12) throw new ApiError(400, "Password must be at least 12 character long!")
 
-        // hashing password
+    // hashing password
     const hashedPassword = await hashPassword(password)
-    if(!hashedPassword) throw new ApiError(500, "Password hashing error!")
-    
+    if (!hashedPassword) throw new ApiError(500, "Password hashing error!")
+
     if (role === "Customer") {
-        if(!shippingAddress) throw new ApiError(400, "Shipping Address required!")
-            const createUser = await prisma.User.create({
-                data: {
-                    fullName,
-                    userName,
-                    mobileNo,
-                    email,
-                    password: hashedPassword,
-                    role,
-                    shippingAddress
-                }
-            })
-            res.status(201).json({message: "User Registered as customer"})
-    } else if(role === "Seller") {
+        if (!shippingAddress) throw new ApiError(400, "Shipping Address required!")
         const createUser = await prisma.User.create({
-                data: {
-                    fullName,
-                    userName,
-                    mobileNo,
-                    email,
-                    password: hashedPassword,
-                    role
-                }
-            })
-            res.status(201).json({message: "User Registered as seller", createUser})
+            data: {
+                fullName,
+                userName,
+                mobileNo,
+                email,
+                password: hashedPassword,
+                role,
+                shippingAddress
+            }
+        })
+        res.status(201).json({ message: "User Registered as customer" })
+    } else if (role === "Seller") {
+        const createUser = await prisma.User.create({
+            data: {
+                fullName,
+                userName,
+                mobileNo,
+                email,
+                password: hashedPassword,
+                role
+            }
+        })
+        res.status(201).json({ message: "User Registered as seller", createUser })
     } else {
         throw new ApiError(400, "Role must be either Customer or Seller")
     }
@@ -73,21 +73,26 @@ export const userRegister = asyncHandler(async (req, res) => {
 
 
 // test purpose only
-export const getAllSeller = asyncHandler(async(req, res) => {
+export const getAllSeller = asyncHandler(async (req, res) => {
     const userRole = req.params.role
     const allSeller = await prisma.User.findMany({
-        where: {role: userRole}
+        where: { role: userRole }
     })
-    res.status(200).json({message: "All Sellers: ", allSeller})
+    res.status(200).json({ message: "All Sellers: ", allSeller })
 })
 
 // test purpose only
-export const getAllCustomer = asyncHandler(async(req, res) => {
+export const getAllCustomer = asyncHandler(async (req, res) => {
     const userRole = req.params.role
     const allCustomer = await prisma.User.findMany({
-        where: {role: userRole}
+        where: { role: userRole }
     })
-    res.status(200).json({message: "All Customers: ", allCustomer})
+    res.status(200).json({ message: "All Customers: ", allCustomer })
 })
 
 
+export const updateUser = asyncHandler(async (req, res) => {
+    const { fullName, userName, mobileNo, email, profilePic, shippingAddress } = req.body
+
+    
+})

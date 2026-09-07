@@ -35,7 +35,6 @@ export const loginUser = asyncHandler(async (req, res) => {
     const id = existUser.id
     await prisma.refreshToken.create({
         data: {
-            id,
             token: refreshToken,
             userId: id,
             expiresAt: expiryTime
