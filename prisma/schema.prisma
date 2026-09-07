@@ -7,7 +7,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -21,21 +21,22 @@ enum UserRole {
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   fullName        String
-  userName        String    @unique
-  mobileNo        String    @unique
-  email           String    @unique
+  userName        String         @unique
+  mobileNo        String         @unique
+  email           String         @unique
   password        String
   profilePic      String?
-  role            UserRole  @default(Customer)
+  role            UserRole       @default(Customer)
   shippingAddress String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   productSold     Product[]
   review          Review[]
   cart            Cart? //as one user has only one cart
   order           Order[]
+  refreshToken    RefreshToken[]
 }
 
 model Product {
@@ -129,4 +130,13 @@ model OrderItems {
   price     Float
   orderId   Int
   order     Order   @relation(fields: [orderId], references: [id])
+}
+
+model RefreshToken {
+  id      Int    @id @default(autoincrement())
+  token   String
+  userId  Int
+  userRef User   @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

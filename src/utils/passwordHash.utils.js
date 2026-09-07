@@ -6,5 +6,5 @@ export const hashPassword = async function(password) {
 
 
 export const isModified = async function(password, hashedPassword) {
-   return await bcrypt.compare(password, hashPassword)
+   return await bcrypt.compare(password, hashedPassword)
 }
