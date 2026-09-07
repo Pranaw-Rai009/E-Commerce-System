@@ -2,6 +2,7 @@ import { asyncHandler } from '../utils/asyncHandler.utils.js'
 import ApiError from '../utils/apiError.utils.js'
 import { prisma } from '../db/dbConnect.js'
 import { hashPassword } from '../utils/passwordHash.utils.js'
+import { json } from 'express'
 
 export const userRegister = asyncHandler(async (req, res) => {
     const { fullName, userName, mobileNo, email, password, profilePic, role, shippingAddress } = req.body
@@ -15,14 +16,16 @@ export const userRegister = asyncHandler(async (req, res) => {
     // User existence check
     const userExist = await prisma.User.findFirst({
         where: {
-            OR: [{ userName} , {email }]
+            OR: [{ userName} , {email }, {mobileNo}]
         }
     })
     if (userExist) {
         if (userExist.userName === userName) {  // checking if username is alredy taken
             throw new ApiError(409, "Username already taken!")
-        } else {  //checking if email is already exist
+        } else if(userExist.email === email){  //checking if email is already exist
             throw new ApiError(409, "User with this email already exist!")
+        } else {
+            throw new ApiError(409, "User with this mobile number already exist!")
         }
     }
 
@@ -66,3 +69,25 @@ export const userRegister = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Role must be either Customer or Seller")
     }
 })
+
+
+
+// test purpose only
+export const getAllSeller = asyncHandler(async(req, res) => {
+    const userRole = req.params.role
+    const allSeller = await prisma.User.findMany({
+        where: {role: userRole}
+    })
+    res.status(200).json({message: "All Sellers: ", allSeller})
+})
+
+// test purpose only
+export const getAllCustomer = asyncHandler(async(req, res) => {
+    const userRole = req.params.role
+    const allCustomer = await prisma.User.findMany({
+        where: {role: userRole}
+    })
+    res.status(200).json({message: "All Customers: ", allCustomer})
+})
+
+
