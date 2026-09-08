@@ -4,6 +4,8 @@ import { prisma } from '../db/dbConnect.js'
 import { hashPassword, isModified } from '../utils/passwordHash.utils.js'
 import { json } from 'express'
 import app from '../app.js'
+import { uploadOnCloudinary } from '../utils/cloudinary.utils.js'
+
 
 export const userRegister = asyncHandler(async (req, res) => {
     const { fullName, userName, mobileNo, email, password, profilePic, role, shippingAddress } = req.body
@@ -95,7 +97,7 @@ export const getAllCustomer = asyncHandler(async (req, res) => {
 export const updateUser = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const userRole = req.user.role
-    const { fullName, userName, mobileNo, email, profilePic, shippingAddress } = req.body
+    const { fullName, userName, mobileNo, email, shippingAddress } = req.body
 
     if (userRole === Customer) {
         const updateCustomer = await prisma.User.updateMany({
@@ -107,7 +109,6 @@ export const updateUser = asyncHandler(async (req, res) => {
                 userName,
                 mobileNo,
                 email,
-                profilePic,
                 shippingAddress
             }
         })
@@ -121,8 +122,7 @@ export const updateUser = asyncHandler(async (req, res) => {
                 fullName,
                 userName,
                 mobileNo,
-                email,
-                profilePic
+                email
             }
         })
         res.status(200).json({ message: "Seller data updated", updateSeller })
@@ -152,4 +152,22 @@ export const updatePassword = asyncHandler(async (req, res) => {
         data: { password: hashNewPassword }
     })
     res.status(200).json({ message: "Password Updated" })
+})
+
+export const updateProfilePic = asyncHandler(async(req, res) => {
+    const userId = req.user.id
+    if(!req.file) throw new ApiError(400, "No image uploaded!")
+    const localFilePath = req.file.path
+
+    const uploadResult = await uploadOnCloudinary(localFilePath)
+    if(!uploadResult) throw new ApiError(500, "Failed to upload image!")
+
+    const updateUser = await prisma.User.update({
+        where: {id: userId},
+        data: {
+            profilePic: uploadResult.secure_url
+        }
+    })
+    if(!updateUser) throw new ApiError(500, "Couldn't update profile pic")
+    res.status(500).json({message: "Profile Picture Updated", user: updateUser})
 })
