@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { userRegister, getAllSeller, getAllCustomer, updateUser, updatePassword, updateProfilePic } from '../controllers/user.controller.js'
 import { loginUser } from '../controllers/login.controller.js'
 import { refreshAccessToken } from '../controllers/refreshAccessToken.controller.js'
-import { authAccess } from '../middlewares/authAccess.middleare.js'
+import { authAccess } from '../middlewares/authAccess.middleware.js'
 import { upload } from '../middlewares/multer.middleware.js'
 const router = Router()
 

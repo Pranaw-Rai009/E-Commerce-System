@@ -4,8 +4,9 @@ import jwt from 'jsonwebtoken'
 
 
 export const authAccess = asyncHandler(async (req, res, next) => {
-    const incomingAccesToken = req.header["authorization"]
-    const accessToken = incomingAccesToken.split(" ")[1]
+    const incomingAccessToken = req.headers["authorization"]
+    if(!incomingAccessToken) throw new ApiError(400, "Authorization Header missing!")
+    const accessToken = incomingAccessToken.split(" ")[1]
 
     const isVerified = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
     if(!isVerified) throw new ApiError(401, "Invalid Access Token")
