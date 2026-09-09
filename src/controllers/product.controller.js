@@ -73,3 +73,17 @@ export const getProducts = asyncHandler(async(req, res) => {
     res.status(200).json({AllProducts: allProducts})
 })
 
+
+export const seeProduct = asyncHandler(async(req, res) => {
+    const productId = req.params.id
+    if(!productId) throw new ApiError(404, "Product id not found!")
+    
+    const product = await prisma.Product.findUnique({
+        where: {
+            id: parseInt(productId)
+        }
+    })
+    res.status(200).json({Product: product})
+})
+
+
