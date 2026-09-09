@@ -3,6 +3,8 @@ import ApiError from "../utils/apiError.utils.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.utils.js"
 import fs from 'fs'
 import { prisma } from "../db/dbConnect.js";
+import { error } from "console";
+import app from "../app.js";
 
 export const uploadProduct = asyncHandler(async(req, res) => {
     const { title, description, stock, categoryId, price } = req.body
@@ -37,3 +39,37 @@ export const uploadProduct = asyncHandler(async(req, res) => {
     if(!upload) throw new ApiError(500, "Failed to upload Product!")
     res.status(201).json({message: "Product Uploaded", upload})
 })
+
+export const getMyProducts = asyncHandler(async(req, res) => {
+    const userId = req.user.id
+    const userRole = req.user.role
+    if(userRole != "Seller") throw new ApiError(403, "You are not a seller!")
+    
+    const allProducts = await prisma.Product.findMany({
+        where: {
+            sellerId: userId,
+        }
+    })
+    if(!allProducts) throw new ApiError(204, "No products listed")
+    res.status(200).json({AllProducts: allProducts})
+})
+
+export const getProducts = asyncHandler(async(req, res) => {
+    const userId = req.params.id
+    if(!userId) throw new ApiError(401, "User id missing")
+    
+    const isSeller = await prisma.User.findUnique({
+        where: {
+            id: parseInt(userId)
+        }
+    })
+    if(isSeller.role != "Seller") throw new ApiError(400, "Not a seller")
+    
+    const allProducts = await prisma.Product.findMany({
+        where: {
+            sellerId: parseInt(userId)
+        }
+    })
+    res.status(200).json({AllProducts: allProducts})
+})
+
