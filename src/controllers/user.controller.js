@@ -5,7 +5,7 @@ import { hashPassword, isModified } from '../utils/passwordHash.utils.js'
 import { json } from 'express'
 import app from '../app.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.utils.js'
-
+import { createMyCart } from './cart.controller.js'
 
 export const userRegister = asyncHandler(async (req, res) => {
     const { fullName, userName, mobileNo, email, password, profilePic, role, shippingAddress } = req.body
@@ -55,6 +55,10 @@ export const userRegister = asyncHandler(async (req, res) => {
                 shippingAddress
             }
         })
+
+        const myCart = createMyCart(createUser.id)
+        if (!myCart) throw new ApiError(500, "Cart creation failed")
+
         res.status(201).json({ message: "User Registered as customer" })
     } else if (role === "Seller") {
         const createUser = await prisma.User.create({
@@ -154,20 +158,20 @@ export const updatePassword = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "Password Updated" })
 })
 
-export const updateProfilePic = asyncHandler(async(req, res) => {
+export const updateProfilePic = asyncHandler(async (req, res) => {
     const userId = req.user.id
-    if(!req.file) throw new ApiError(400, "No image uploaded!")
+    if (!req.file) throw new ApiError(400, "No image uploaded!")
     const localFilePath = req.file.path
 
     const uploadResult = await uploadOnCloudinary(localFilePath)
-    if(!uploadResult) throw new ApiError(500, "Failed to upload image!")
+    if (!uploadResult) throw new ApiError(500, "Failed to upload image!")
 
     const updateUser = await prisma.User.update({
-        where: {id: userId},
+        where: { id: userId },
         data: {
             profilePic: uploadResult.secure_url
         }
     })
-    if(!updateUser) throw new ApiError(500, "Couldn't update profile pic")
-    res.status(500).json({message: "Profile Picture Updated", user: updateUser})
+    if (!updateUser) throw new ApiError(500, "Couldn't update profile pic")
+    res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
