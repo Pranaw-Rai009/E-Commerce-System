@@ -5,6 +5,7 @@ import fs from 'fs'
 import { prisma } from "../db/dbConnect.js";
 import { error } from "console";
 import app from "../app.js";
+import { title } from "process";
 
 export const uploadProduct = asyncHandler(async(req, res) => {
     const { title, description, stock, categoryId, price } = req.body
@@ -86,4 +87,30 @@ export const seeProduct = asyncHandler(async(req, res) => {
     res.status(200).json({Product: product})
 })
 
+export const searchProduct = asyncHandler(async(req, res) => {
+    const searchInput = req.query
+    if(!searchInput) throw new ApiError(400, "No input to search!")
+    
+    const searchResult = await prisma.Product.findMany({
+        where: {
+            title: searchInput,
+            mode: 'insensitive' //makes search case insensitive!
+        }
+    })
+
+    res.status(200).json({Result: searchResult})
+})
+
+export const listProductsByCategory = asyncHandler(async(req, res) => {
+    const incomingCategoryId = req.params.categoryId
+    if(!incomingCategoryId) throw new ApiError(400, "No Categoryid to list Products")
+    
+    const result = await prisma.Product.findMan({
+        where: {
+            categoryId: incomingCategoryId
+        }
+    })
+
+    res.status(200).json({result})
+})
 
