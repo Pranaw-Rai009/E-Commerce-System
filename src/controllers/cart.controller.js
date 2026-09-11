@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 import { createCartItem } from './cartItem.controller.js'
+import { title } from "node:process";
 
 export const createMyCart = async (id) => {
     const userId = id
@@ -52,9 +53,36 @@ export const removeItemsFromCart = asyncHandler(async (req, res) => {
 
     await prisma.cartItems.deleteMany({
         where: {
-            id: { in: cartItemIds},
+            id: { in: cartItemIds },
             cartId: userCart.id
         }
     })
     res.status(200).json({ message: "Removed from cart" })
+})
+
+export const getMyCart = asyncHandler(async (req, res) => {
+    const myId = req.user.id
+
+    const showProduct = await prisma.cart.findUnique({
+        where: { userId: myId },
+        include: {
+            cartItem: {
+                select: {
+                    id: true,
+                    quantity: true,
+                    product: {
+                        select: {
+                            id: true,
+                            sellerId: true,
+                            title: true,
+                            prodImages: true,
+                            price: true,
+                        }
+                    }
+                }
+            }
+        }
+    })
+    if(!showProduct) throw new ApiError(404, "Cart not found")
+    res.status(200).json(showProduct)
 })
