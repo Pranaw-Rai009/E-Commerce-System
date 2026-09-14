@@ -25,7 +25,8 @@ export const createNewOrder = asyncHandler(async (req, res) => {
             include: {
                 product: {
                     select: {
-                        price: true
+                        price: true,
+                        sellerId: true
                     }
                 }
             }
@@ -33,29 +34,71 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     })
     const orderDetail = await Promise.all(orderDetailsPromises)
 
-    const forEachOrder = orderDetails.map(async (order1) => {
-        const subTotalPrice = order1.quantity * order1.product.price
-        const deliveryCharge = subTotalPrice >= 10000 ? 0 : 130
-        return { subTotalPrice, deliveryCharge }
-    })
+
+    const itemBySeller={} // creating an empty object to store array of differnet sellers
+    for(const items of orderDetail) {
+        const sellerId = items.product.sellerId
+        if(!itemBySeller[sellerId]) itemBySeller[sellerId] = [] //creating a unique key
+        itemBySeller[sellerId].push[items]  // pusing items in key as value
+    }
 
     let subTotal = 0
     let deliveryCharge = 0
-    for (const item of forEachOrder) {
-        subTotal += item.subTotalPrice
-        deliveryCharge += item.deliveryCharge
+    for(const sellerId in itemBySeller) {
+        let sellerSubtotal = 0
+        for(const item of itemBySeller[sellerId]) {
+            sellerSubtotal += item.quantity * item.product.price
+        }
+        deliveryCharge += sellerSubtotal >= 50000 ? 0 : 130
+        subTotal += sellerSubtotal
     }
-    const totalAmount = subtotal + deliveryCharge
+
+    const totalAmount = subTotal + deliveryCharge
 
     const newOrder = await prisma.order.create({
         data: {
             userId: req.user.id,
             deliveryCharge,
-            subTotal,
             totalAmount,
+            subTotal,
             shippingAddress: userData.shippingAddress,
+            staus: "PENDING",
+            paymentMethod: "CASH_ON_DELIVERY"
         }
     })
-    if(!newOrder) throw new ApiError(500, "Error occured while creating product!")
-    res.status(201).json(newOrder)
+
+    if(!newOrder) throw new ApiError(500, "New order creation failed")
+
+    res.status(200).json(newOrder)
+
+
+
+    // Wrong logic
+    
+    // const forEachItem = orderDetails.map(async (order1) => {
+    //     const subTotalPrice = order1.quantity * order1.product.price
+    //     return { subTotalPrice }
+    // })
+
+    // let subTotal = 0
+    // let deliveryCharge = 0
+    // for (const item of forEachOrder) {
+    //     subTotal += item.subTotalPrice
+    // }
+
+    // let noOfSeller = []
+    
+    // const totalAmount = subtotal + deliveryCharge
+
+    // const newOrder = await prisma.order.create({
+    //     data: {
+    //         userId: req.user.id,
+    //         deliveryCharge,
+    //         subTotal,
+    //         totalAmount,
+    //         shippingAddress: userData.shippingAddress,
+    //     }
+    // })
+    // if(!newOrder) throw new ApiError(500, "Error occured while creating product!")
+    // res.status(201).json(newOrder)
 })
