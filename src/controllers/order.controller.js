@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 import createOrderItem from "../controllers/cartItem.controller.js"
+import { title } from "node:process";
 
 export const createNewOrder = asyncHandler(async (req, res) => {
 
@@ -75,6 +76,33 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     res.status(200).json(newOrder)
 
 
+    const getMyOrder = asyncHandler(async(req, res) => {
+        const userId = req.user.id
+        const myOrders = await prisma.order.findMany({
+            where: {
+                userId
+            },
+            include: {
+                orderItems: {
+                    select: {
+                        quantity: true,
+                        price: true
+                    },
+                    include: {
+                        product: {
+                            title: true,
+                            prodImages: true
+                        }
+                    }
+                }
+            }
+        })
+        if(!myOrders || myOrders === 0) {
+            res.status(200).json({myOrders, message: "No orders yet"})
+        } else {
+            res.status(200).json(myOrders)
+        }
+    })
 
     // Wrong logic
     
