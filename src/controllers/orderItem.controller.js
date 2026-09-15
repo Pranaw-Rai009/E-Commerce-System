@@ -2,40 +2,50 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 
-export const createOrderItem = async (cartItemIds, cartId, orderId) => {
+export const createOrderItem = async (cartItemIds, cartId, userId, orderId) => {
     if (cartItemsIds.length === 0 || !cartItemsIds) throw new ApiError(400, "No items id's to create cartItems [Creating order items!]")
 
-    const resutl = await Promise.all(
-        // since have async on map it returns promises and doesnt wait for all to resolve so, insted we use prosmie.all to collect all promise and resolve if all map resutl resolves or else thro error
-        cartItemIds.map(async (cartItemId) => {
-            const item = await prisma.cartItems.findFirst({
-                where: {
-                    cartId,
-                    id: cartItemId
-                },
-                include: {
-                    product: {
-                        select: {
-                            id: true,
-                            title: true,
-                            sellerId: true,
-                            prodImages: true,
-                            price: true
-                        }
+    const allItems = cartItemIds.map(async(itemId) => {
+        return await prisma.cartItems.findFirst({
+            where: {
+                id: itemId,
+                cart: {
+                    userId
+                }
+            },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        title: true,
+                        sellerId: true,
+                        price: true
                     }
                 }
-            })
+            }
         })
-    )
-    const productId = item.product.id
-    const totalQuantity = item.quantity
-    const totalPrice = item.quantity * item.product.price
-    return await prisma.orderItems.create({
-        data: {
-            productId,
-            quantity: totalQuantity,
-            price: totalPrice,
-            orderId
-        }
     })
+
+    const result = await Promise.all(allItems)
+    if(!result) throw new ApiError(500, "Error occured while extracting cartItems detail to create orderItems")
+
+    // Creating the snapshot of the items
+
+    const newOrderItems = result.map(async(item) => {
+        // const totalPrice = item.quantity * item.product.price
+
+        return await prisma.orderItems.create({
+            data: {
+                productId: item.product.id,
+                quantity: item.quantity,
+                price: item.product.price,
+                orderId
+            }
+        })
+    })
+
+    const newOrders = await Promise.all(newOrderItems)
+    if(!newOrders) throw new ApiError(500, "Error occured while creating order items")
+    return { newOrders }
+    
 }
