@@ -10,7 +10,7 @@ export const createNewOrder = asyncHandler(async (req, res) => {
 
     const userData = await prisma.user.findFirst({
         where: {
-            io: req.user.id
+            id: req.user.id
         }
     })
 
@@ -69,6 +69,9 @@ export const createNewOrder = asyncHandler(async (req, res) => {
 
     if(!newOrder) throw new ApiError(500, "New order creation failed")
 
+    await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() =>{
+        console.log(`Created Order Items for Order id: ${newOrder.id}`)
+    })
     res.status(200).json(newOrder)
 
 

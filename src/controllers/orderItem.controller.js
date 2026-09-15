@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 
-export const createOrderItem = async (cartItemIds, cartId, userId, orderId) => {
+export const createOrderItem = async (cartItemIds, userId, orderId) => {
     if (cartItemsIds.length === 0 || !cartItemsIds) throw new ApiError(400, "No items id's to create cartItems [Creating order items!]")
 
     const allItems = cartItemIds.map(async(itemId) => {
@@ -47,5 +47,5 @@ export const createOrderItem = async (cartItemIds, cartId, userId, orderId) => {
     const newOrders = await Promise.all(newOrderItems)
     if(!newOrders) throw new ApiError(500, "Error occured while creating order items")
     return { newOrders }
-    
 }
+   
