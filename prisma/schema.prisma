@@ -94,7 +94,9 @@ model CartItems {
 
 enum DeliveryStat {
   PENDING
+  SHIPPED
   DELIVERED
+  CANCELLED
 }
 
 enum PaymentStat {
@@ -120,6 +122,8 @@ model Order {
   orderItems      OrderItems[]
   paymentMetohd   PaymentMetohd
   paymentStatus   PaymentStat   @default(PENDING)
+  cancelReason    String?
+  cancelledAt     DateTime?
 }
 
 model OrderItems {
@@ -133,10 +137,10 @@ model OrderItems {
 }
 
 model RefreshToken {
-  id      Int    @id @default(autoincrement())
-  token   String
-  userId  Int
-  userRef User   @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  token     String
+  userId    Int
+  userRef   User     @relation(fields: [userId], references: [id])
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
