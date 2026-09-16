@@ -86,3 +86,23 @@ export const getMyCart = asyncHandler(async (req, res) => {
     if(!showProduct) throw new ApiError(404, "Cart not found")
     res.status(200).json(showProduct)
 })
+
+export const removeItemFromCartOnOrder = async(cartItemIds) => {
+
+    if(!cartItemIds) throw new ApiError(400, "No ordered items cartItem id provided")
+    
+    const myCart = await prisma.cart.findUnique({
+        where: {
+            userId: req.user.id
+        }
+    })
+    if(!myCart) throw new ApiError(500, "Cart doesn't exist!")
+    
+    const deleteCartItems = await prisma.cartItems.deleteMany({
+        where: {
+            cartId: myCart.id,
+            id: {in: cartItemIds}
+        }
+    })
+    res.status(200).json({message: "Deleted the items after placing order"})
+}

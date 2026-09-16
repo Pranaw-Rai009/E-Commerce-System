@@ -74,88 +74,91 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() => {
         console.log(`Created Order Items for Order id: ${newOrder.id}`)
     })
+
+    await removeItemFromCartOnOrder(cartItemsIds).then(() => {
+        console.log("Items removed from cart!")
+    })
     res.status(200).json(newOrder)
+})
 
-
-    const getMyOrder = asyncHandler(async (req, res) => {
-        const userId = req.user.id
-        const myOrders = await prisma.order.findMany({
-            where: {
-                userId
-            },
-            include: {
-                orderItems: {
-                    select: {
-                        quantity: true,
-                        price: true
-                    },
-                    include: {
-                        product: {
-                            title: true,
-                            prodImages: true
-                        }
+export const getMyOrder = asyncHandler(async (req, res) => {
+    const userId = req.user.id
+    const myOrders = await prisma.order.findMany({
+        where: {
+            userId
+        },
+        include: {
+            orderItems: {
+                select: {
+                    quantity: true,
+                    price: true
+                },
+                include: {
+                    product: {
+                        title: true,
+                        prodImages: true
                     }
                 }
             }
-        })
-        if (!myOrders || myOrders === 0) {
-            res.status(200).json({ myOrders, message: "No orders yet" })
-        } else {
-            res.status(200).json(myOrders)
         }
     })
-
-    export const cancelOrder = asyncHandler(async (req, res) => {
-        const orderId = req.params.orderId
-        const userId = req.user.id
-        const { cancellationReason } = req.body
-        if (!orderId) throw new ApiError(400, "OrderId missing [Required for cancellation!]")
-        const orderExist = await prisma.order.findFirst({
-            where: { id: parseInt(orderId), userId }
-        })
-        const orderUpdate = await prisma.order.update({
-            where: {
-                id: parseInt(orderId),
-                userId
-            },
-            data: {
-                status: "CANCELLED",
-                cancelReason: cancellationReason,
-                cancelledAt: new Date()
-            }
-        })
-        if (!orderUpdate) throw new ApiError(500, "Couldn't cancel the order")
-
-        res.status(200).json({ message: "Order Cancelled", order: orderUpdate })
-
-    })
-
-    // Wrong logic
-
-    // const forEachItem = orderDetails.map(async (order1) => {
-    //     const subTotalPrice = order1.quantity * order1.product.price
-    //     return { subTotalPrice }
-    // })
-
-    // let subTotal = 0
-    // let deliveryCharge = 0
-    // for (const item of forEachOrder) {
-    //     subTotal += item.subTotalPrice
-    // }
-
-    // let noOfSeller = []
-
-    // const totalAmount = subtotal + deliveryCharge
-
-    // const newOrder = await prisma.order.create({
-    //     data: {
-    //         userId: req.user.id,
-    //         deliveryCharge,
-    //         subTotal,
-    //         totalAmount,
-    //         shippingAddress: userData.shippingAddress,
-    //     }
-    // })
-    // if(!newOrder) throw new ApiError(500, "Error occured while creating product!")
-    // res.status(201).json(newOrder)
+    if (!myOrders || myOrders === 0) {
+        res.status(200).json({ myOrders, message: "No orders yet" })
+    } else {
+        res.status(200).json(myOrders)
+    }
 })
+
+export const cancelOrder = asyncHandler(async (req, res) => {
+    const orderId = req.params.orderId
+    const userId = req.user.id
+    const { cancellationReason } = req.body
+    if (!orderId) throw new ApiError(400, "OrderId missing [Required for cancellation!]")
+    const orderExist = await prisma.order.findFirst({
+        where: { id: parseInt(orderId), userId }
+    })
+    const orderUpdate = await prisma.order.update({
+        where: {
+            id: parseInt(orderId),
+            userId
+        },
+        data: {
+            status: "CANCELLED",
+            cancelReason: cancellationReason,
+            cancelledAt: new Date()
+        }
+    })
+    if (!orderUpdate) throw new ApiError(500, "Couldn't cancel the order")
+
+    res.status(200).json({ message: "Order Cancelled", order: orderUpdate })
+
+})
+
+// Wrong logic
+
+// const forEachItem = orderDetails.map(async (order1) => {
+//     const subTotalPrice = order1.quantity * order1.product.price
+//     return { subTotalPrice }
+// })
+
+// let subTotal = 0
+// let deliveryCharge = 0
+// for (const item of forEachOrder) {
+//     subTotal += item.subTotalPrice
+// }
+
+// let noOfSeller = []
+
+// const totalAmount = subtotal + deliveryCharge
+
+// const newOrder = await prisma.order.create({
+//     data: {
+//         userId: req.user.id,
+//         deliveryCharge,
+//         subTotal,
+//         totalAmount,
+//         shippingAddress: userData.shippingAddress,
+//     }
+// })
+// if(!newOrder) throw new ApiError(500, "Error occured while creating product!")
+// res.status(201).json(newOrder)
