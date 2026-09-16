@@ -231,3 +231,17 @@ export const listProductsByCategory = asyncHandler(async (req, res) => {
     res.status(200).json({ result })
 })
 
+export const deleteProduct = asyncHandler(async(req, res) => {
+    const productId = req.params.productId
+    const userId = req.user.id
+
+    const deleteProduct = await prisma.product.delete({
+        where: {
+            id: req.isOwner.id,
+            sellerId: req.isOwner.sellerId
+        }
+    })
+    if(!deleteProduct) throw new ApiError(500, "Couldn't delete the product")
+    res.status(204).json({message: "Product Deleted"})
+})
+
