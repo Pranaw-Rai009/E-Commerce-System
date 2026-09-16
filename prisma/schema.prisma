@@ -102,6 +102,7 @@ enum DeliveryStat {
 enum PaymentStat {
   PENDING
   PAID
+  REFUNDED
 }
 
 enum PaymentMetohd {

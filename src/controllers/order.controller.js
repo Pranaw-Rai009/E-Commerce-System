@@ -3,6 +3,7 @@ import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 import createOrderItem from "../controllers/cartItem.controller.js"
 import { title } from "node:process";
+import { CANCELLED } from "node:dns";
 
 export const createNewOrder = asyncHandler(async (req, res) => {
 
@@ -36,18 +37,18 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     const orderDetail = await Promise.all(orderDetailsPromises)
 
 
-    const itemBySeller={} // creating an empty object to store array of differnet sellers
-    for(const items of orderDetail) {
+    const itemBySeller = {} // creating an empty object to store array of differnet sellers
+    for (const items of orderDetail) {
         const sellerId = items.product.sellerId
-        if(!itemBySeller[sellerId]) itemBySeller[sellerId] = [] //creating a unique key
+        if (!itemBySeller[sellerId]) itemBySeller[sellerId] = [] //creating a unique key
         itemBySeller[sellerId].push[items]  // pusing items in key as value
     }
 
     let subTotal = 0
     let deliveryCharge = 0
-    for(const sellerId in itemBySeller) {
+    for (const sellerId in itemBySeller) {
         let sellerSubtotal = 0
-        for(const item of itemBySeller[sellerId]) {
+        for (const item of itemBySeller[sellerId]) {
             sellerSubtotal += item.quantity * item.product.price
         }
         deliveryCharge += sellerSubtotal >= 50000 ? 0 : 130
@@ -68,15 +69,15 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         }
     })
 
-    if(!newOrder) throw new ApiError(500, "New order creation failed")
+    if (!newOrder) throw new ApiError(500, "New order creation failed")
 
-    await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() =>{
+    await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() => {
         console.log(`Created Order Items for Order id: ${newOrder.id}`)
     })
     res.status(200).json(newOrder)
 
 
-    const getMyOrder = asyncHandler(async(req, res) => {
+    const getMyOrder = asyncHandler(async (req, res) => {
         const userId = req.user.id
         const myOrders = await prisma.order.findMany({
             where: {
@@ -97,15 +98,40 @@ export const createNewOrder = asyncHandler(async (req, res) => {
                 }
             }
         })
-        if(!myOrders || myOrders === 0) {
-            res.status(200).json({myOrders, message: "No orders yet"})
+        if (!myOrders || myOrders === 0) {
+            res.status(200).json({ myOrders, message: "No orders yet" })
         } else {
             res.status(200).json(myOrders)
         }
     })
 
+    export const cancelOrder = asyncHandler(async (req, res) => {
+        const orderId = req.params.orderId
+        const userId = req.user.id
+        const { cancellationReason } = req.body
+        if (!orderId) throw new ApiError(400, "OrderId missing [Required for cancellation!]")
+        const orderExist = await prisma.order.findFirst({
+            where: { id: parseInt(orderId), userId }
+        })
+        const orderUpdate = await prisma.order.update({
+            where: {
+                id: parseInt(orderId),
+                userId
+            },
+            data: {
+                status: "CANCELLED",
+                cancelReason: cancellationReason,
+                cancelledAt: new Date()
+            }
+        })
+        if (!orderUpdate) throw new ApiError(500, "Couldn't cancel the order")
+
+        res.status(200).json({ message: "Order Cancelled", order: orderUpdate })
+
+    })
+
     // Wrong logic
-    
+
     // const forEachItem = orderDetails.map(async (order1) => {
     //     const subTotalPrice = order1.quantity * order1.product.price
     //     return { subTotalPrice }
@@ -118,7 +144,7 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     // }
 
     // let noOfSeller = []
-    
+
     // const totalAmount = subtotal + deliveryCharge
 
     // const newOrder = await prisma.order.create({
