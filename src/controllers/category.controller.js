@@ -31,7 +31,7 @@ export const deleteCategory = asyncHandler(async(req, res) => {
     
     await prisma.category.delete({
         where: {
-            id: categoryId
+            id: parseInt(categoryId)
         }
     })
     

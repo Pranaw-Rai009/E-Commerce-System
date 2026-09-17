@@ -43,26 +43,27 @@ export const uploadProduct = asyncHandler(async (req, res) => {
 
 export const updateProduct = asyncHandler(async (req, res) => {
     const userId = req.user.id
-    const userRole = req.user.role
-
-    if (userRole === "Seller") throw new ApiError(401, "Seller is not authorized to Interfere with products")
 
     const productId = req.params.productId
     if (!productId) throw new ApiError(400, "Product Id is missing [Required for product update process!]")
 
     const { title, description, stock, price } = req.body
 
-    const existProduct = await prisma.product.update({
+    const existProduct = await prisma.product.findFirst({
         where: {
-            id: productId
+            id: parseInt(productId)
         }
     })
-    const newStock = existProduct.stock + stock
-    if (!existProduct) throw new ApiError(400, "Product doesn't exist! for updating!")
-    const updateProductData = await prisma.prodcut.update({
+    if (!existProduct) throw new ApiError(400, "Product doesn't exist! [Update not possible]")
+
+    if (existProduct.sellerId !== userId) throw new ApiError(403, "You are not authorized to update this product!")
+
+    // add to existing stock, but only if stock was actually provided
+    const newStock = stock !== undefined ? existProduct.stock + stock : existProduct.stock
+    const updateProductData = await prisma.product.update({
         where: {
-            id: productId,
-            sellerId: userId
+            id: parseInt(productId),
+            // sellerId: userId
         },
         data: {
             title,
@@ -110,9 +111,9 @@ export const addProductImage = asyncHandler(async (req, res) => {
     })
 
     const newImageUrls = []
-    for(const file of req.files) {
+    for (const file of req.files) {
         const result = await uploadOnCloudinary(file.path)
-        if(result) newImageUrls.push(result.secure_url)
+        if (result) newImageUrls.push(result.secure_url)
     }
 
     const updateImageOfProduct = await prisma.product.update({
@@ -160,8 +161,6 @@ export const replaceOneProductImage = asyncHandler(async (req, res) => {
 
 export const getMyProducts = asyncHandler(async (req, res) => {
     const userId = req.user.id
-    const userRole = req.user.role
-    if (userRole != "Seller") throw new ApiError(403, "You are not a seller!")
 
     const allProducts = await prisma.Product.findMany({
         where: {
@@ -231,7 +230,7 @@ export const listProductsByCategory = asyncHandler(async (req, res) => {
     res.status(200).json({ result })
 })
 
-export const deleteProduct = asyncHandler(async(req, res) => {
+export const deleteProduct = asyncHandler(async (req, res) => {
     const productId = req.params.productId
     const userId = req.user.id
 
@@ -241,7 +240,7 @@ export const deleteProduct = asyncHandler(async(req, res) => {
             sellerId: req.isOwner.sellerId
         }
     })
-    if(!deleteProduct) throw new ApiError(500, "Couldn't delete the product")
-    res.status(204).json({message: "Product Deleted"})
+    if (!deleteProduct) throw new ApiError(500, "Couldn't delete the product")
+    res.status(204).json({ message: "Product Deleted" })
 })
 
