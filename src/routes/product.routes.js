@@ -11,4 +11,5 @@ router.get("/getSellerProducts/:id", getProducts)
 router.get("/seeProduct/:id", seeProduct)
 router.get("/search", searchProduct)
 router.get("/searchCategory/:categoryId", listProductsByCategory)
+
 export default router

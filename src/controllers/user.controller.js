@@ -8,7 +8,7 @@ import { uploadOnCloudinary } from '../utils/cloudinary.utils.js'
 import { createMyCart } from './cart.controller.js'
 
 export const userRegister = asyncHandler(async (req, res) => {
-    const { fullName, userName, mobileNo, email, password, profilePic, role, shippingAddress } = req.body
+    const { fullName, userName, mobileNo, email, password, role, shippingAddress } = req.body
     if (!fullName) throw new ApiError(400, "Full Name is required!")
     if (!userName) throw new ApiError(400, "User Name is required!")
     if (!mobileNo) throw new ApiError(400, "Mobile No. is required!")
@@ -103,7 +103,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     const userRole = req.user.role
     const { fullName, userName, mobileNo, email, shippingAddress } = req.body
 
-    if (userRole === Customer) {
+    if (userRole === "Customer") {
         const updateCustomer = await prisma.User.updateMany({
             where: {
                 id: userId
@@ -117,7 +117,7 @@ export const updateUser = asyncHandler(async (req, res) => {
             }
         })
         res.status(200).json({ message: "Customer data updated", updateCustomer })
-    } else if (userRole === Seller) {
+    } else if (userRole === "Seller") {
         const updateSeller = await prisma.User.updateMany({
             where: {
                 id: userId
@@ -148,7 +148,7 @@ export const updatePassword = asyncHandler(async (req, res) => {
 
     if (newPassword2.length < 12) throw new ApiError(400, "New password must be at least 12 character long")
 
-    if (newPassword1 != newPassword2) throw new ApiError(400, "Password don't match")
+    if (newPassword1 != newPassword2) throw new ApiError(400, "New Passwords don't match")
 
     const hashNewPassword = await hashPassword(newPassword1)
     const update = await prisma.User.update({

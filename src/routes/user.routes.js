@@ -12,6 +12,8 @@ router.post("/refreshAccessToken", refreshAccessToken)
 router.post("/update", authAccess, updateUser)
 router.post("/updatePassword", authAccess, updatePassword)
 router.patch("/updateProfilePic", authAccess, upload.single("profilePic"), updateProfilePic)
+
+// for development use only
 router.get("/allSellers/:role", getAllSeller)
 router.get("/allCustomers/:role", getAllCustomer)
 
