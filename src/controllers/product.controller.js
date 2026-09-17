@@ -5,7 +5,7 @@ import fs from 'fs'
 import { prisma } from "../db/dbConnect.js";
 import { error } from "console";
 import app from "../app.js";
-import { throwDeprecation, title } from "process";
+// import { throwDeprecation, title } from "process";
 
 export const uploadProduct = asyncHandler(async (req, res) => {
     const { title, description, stock, categoryId, price } = req.body

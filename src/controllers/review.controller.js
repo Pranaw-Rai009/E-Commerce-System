@@ -33,3 +33,16 @@ export const review = asyncHandler(async (req, res) => {
 
     res.status(201).json({ message: "Review Added", review: createReview })
 })
+
+export const getReview = asyncHandler(async(req, res) => {
+    const reviewId = req.params.reviewId
+    if(!reviewId) throw new ApiError(400, "Review Id is missing!")
+    
+    const review = await prisma.review.findFirst({
+        where: {
+            id: reviewId
+        }
+    })
+    if(!review) throw new ApiError(404, "Review doesn't exist!")
+    res.status(200).json(review)
+})
