@@ -22,8 +22,8 @@ app.use(express.json({static: "Public"}))
 
 // Main routes
 app.use("/api/user", userRouter)
-app.use("/api/category", categoryRouter)
 app.use("/api/product", productRouter)
+app.use("/api/category", categoryRouter)
 app.use("/api/cart", cartRouter)
 
 app.use(errroHandler)
