@@ -109,6 +109,7 @@ export const addProductImage = asyncHandler(async (req, res) => {
             id: parseInt(productId)
         }
     })
+    if(!existProduct) throw new ApiError(404, "Product doesn't exist!")
 
     const newImageUrls = []
     for (const file of req.files) {
@@ -170,6 +171,7 @@ export const deleteProductImage = asyncHandler(async(req, res) => {
             id: parseInt(productId)
         }
     })
+    if(!product) throw new ApiError(404, "Product doesn't  exist!")
 
     // if using {} inside filter user return key
     const productImageNewUrls = product.prodImages.filter((url) => 
@@ -190,12 +192,12 @@ export const deleteProductImage = asyncHandler(async(req, res) => {
 export const getMyProducts = asyncHandler(async (req, res) => {
     const userId = req.user.id
 
-    const allProducts = await prisma.Product.findMany({
+    const allProducts = await prisma.product.findMany({
         where: {
             sellerId: userId,
         }
     })
-    if (!allProducts) throw new ApiError(204, "No products listed")
+    if (allProducts === 0) throw new ApiError(204, "No products listed")
     res.status(200).json({ AllProducts: allProducts })
 })
 
@@ -211,7 +213,7 @@ export const getSellerProducts = asyncHandler(async (req, res) => {
     })
     if (isSeller.role != "Seller") throw new ApiError(400, "Not a seller")
 
-    const allProducts = await prisma.Product.findMany({
+    const allProducts = await prisma.product.findMany({
         where: {
             sellerId: parseInt(userId)
         }
@@ -224,7 +226,7 @@ export const seeProduct = asyncHandler(async (req, res) => {
     const productId = req.params.id
     if (!productId) throw new ApiError(404, "Product id not found!")
 
-    const product = await prisma.Product.findUnique({
+    const product = await prisma.product.findUnique({
         where: {
             id: parseInt(productId)
         },
@@ -261,7 +263,7 @@ export const listProductsByCategory = asyncHandler(async (req, res) => {
     const incomingCategoryId = req.params.categoryId
     if (!incomingCategoryId) throw new ApiError(400, "No Categoryid to list Products")
 
-    const result = await prisma.Product.findMany({
+    const result = await prisma.product.findMany({
         where: {
             categoryId: parseInt(incomingCategoryId)
         }
