@@ -199,7 +199,8 @@ export const getMyProducts = asyncHandler(async (req, res) => {
     res.status(200).json({ AllProducts: allProducts })
 })
 
-export const getProducts = asyncHandler(async (req, res) => {
+
+export const getSellerProducts = asyncHandler(async (req, res) => {
     const userId = req.params.id
     if (!userId) throw new ApiError(401, "User id missing")
 
@@ -226,19 +227,30 @@ export const seeProduct = asyncHandler(async (req, res) => {
     const product = await prisma.Product.findUnique({
         where: {
             id: parseInt(productId)
+        },
+        include: {
+            seller: {
+                select: {
+                    fullName: true,
+                    profilePic: true,
+                }
+            }
         }
     })
     res.status(200).json({ Product: product })
 })
 
 export const searchProduct = asyncHandler(async (req, res) => {
-    const searchInput = req.query
+    const { searchInput } = req.query
     if (!searchInput) throw new ApiError(400, "No input to search!")
 
-    const searchResult = await prisma.Product.findMany({
+    const searchResult = await prisma.product.findMany({
+        // mode needs to be nested inside titles own object, not sitting alongside title at top level
         where: {
-            title: searchInput,
-            mode: 'insensitive' //makes search case insensitive!
+            title: {
+                contains: searchInput,
+                mode: 'insensitive'
+            }
         }
     })
 
@@ -249,9 +261,9 @@ export const listProductsByCategory = asyncHandler(async (req, res) => {
     const incomingCategoryId = req.params.categoryId
     if (!incomingCategoryId) throw new ApiError(400, "No Categoryid to list Products")
 
-    const result = await prisma.Product.findMan({
+    const result = await prisma.Product.findMany({
         where: {
-            categoryId: incomingCategoryId
+            categoryId: parseInt(incomingCategoryId)
         }
     })
 
@@ -269,6 +281,6 @@ export const deleteProduct = asyncHandler(async (req, res) => {
         }
     })
     if (!deleteProduct) throw new ApiError(500, "Couldn't delete the product")
-    res.status(204).json({ message: "Product Deleted" })
+    res.status(200).json({ message: "Product Deleted" })
 })
 
