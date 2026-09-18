@@ -7,9 +7,9 @@ export const isProductOwner = asyncHandler(async (req, res, next) => {
     if (!prodId) throw new ApiError(400, "Product Id is missing!")
     const userId = req.user.id
 
-    const isOwner = await prisma.product.findfirst({
+    const isOwner = await prisma.product.findFirst({
         where: {
-            id: prodId,
+            id: parseInt(prodId),
             sellerId: userId
         }
     })

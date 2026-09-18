@@ -101,8 +101,8 @@ export const replaceAllProductImages = asyncHandler(async (req, res) => {
 export const addProductImage = asyncHandler(async (req, res) => {
     const productId = req.params.productId
     const userId = req.user.id
-    if (!req.files || req.files.length === 0) throw new ApiError(400, "No image uploaded!")
-    const localFilePath = req.file.path
+    if ( !req.files || req.files.length === 0) throw new ApiError(400, "No image uploaded!")
+    const localFilePath = req.files.path
 
     const existProduct = await prisma.product.findFirst({
         where: {
@@ -157,6 +157,34 @@ export const replaceOneProductImage = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "Image replaced", product: updatedProduct })
 })
 */
+
+export const deleteProductImage = asyncHandler(async(req, res) => {
+    const { imageUrl } = req.body
+    if(!imageUrl) throw new ApiError(400, "Image url missing!")
+    
+    const productId = req.params.productId
+    if(!productId) throw new ApiError(400, "Product Id is missing!")
+    
+    const product = await prisma.product.findUnique({
+        where: {
+            id: parseInt(productId)
+        }
+    })
+
+    // if using {} inside filter user return key
+    const productImageNewUrls = product.prodImages.filter((url) => 
+        url !== imageUrl
+    )
+    await prisma.product.update({
+        where: {
+            id: parseInt(productId)
+        },
+        data: {
+            prodImages: productImageNewUrls
+        }
+    })
+    res.status(200).json({message: "Image Removed"})
+})
 
 
 export const getMyProducts = asyncHandler(async (req, res) => {
