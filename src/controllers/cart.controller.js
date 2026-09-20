@@ -13,9 +13,10 @@ export const createMyCart = async (id) => {
     })
 }
 
-export const openMyCart = asyncHandler(async (req, res) => {
+// Function to just get my cart
+export const getMyCart = asyncHandler(async (req, res) => {
     const userId = req.user.id
-    const myCart = await prisma.Cart.findUnique({
+    const myCart = await prisma.cart.findUnique({
         where: {
             userId: userId
         }
@@ -24,7 +25,7 @@ export const openMyCart = asyncHandler(async (req, res) => {
 })
 
 export const addToCart = asyncHandler(async (req, res) => {
-    const productId = req.params.id
+    const productId = req.params.productId
     if (!productId) throw new ApiError(400, "Invalid add to cart request!")
 
     const { productQuantity = 1 } = req.query
@@ -34,6 +35,10 @@ export const addToCart = asyncHandler(async (req, res) => {
             userId
         }
     })
+    
+    // test code line
+    // console.log(req.user)
+
     if (!userCart) throw new ApiError(404, "Cart not found for the user!")
     const addInCart = await createCartItem(parseInt(productQuantity), parseInt(productId), userCart.id)
 
@@ -42,9 +47,9 @@ export const addToCart = asyncHandler(async (req, res) => {
 })
 
 export const removeItemsFromCart = asyncHandler(async (req, res) => {
-    // we will receive items ids from req.body in form or array
+    // we will receive items ids from req.body in form or array : [int1, int2, ...]
     const { cartItemIds } = req.body
-    if (!cartItemIds || cartItemIds === 0) throw new ApiError(400, "No products selected to remove!")
+    if (!cartItemIds || cartItemIds.length === 0) throw new ApiError(400, "No products selected to remove!")
     const userCart = await prisma.cart.findUnique({
         where: {
             userId: req.user.id
@@ -54,13 +59,13 @@ export const removeItemsFromCart = asyncHandler(async (req, res) => {
     await prisma.cartItems.deleteMany({
         where: {
             id: { in: cartItemIds },
-            cartId: userCart.id
+            cartId: parseInt(userCart.id)
         }
     })
     res.status(200).json({ message: "Removed from cart" })
 })
 
-export const getMyCart = asyncHandler(async (req, res) => {
+export const openMyCart = asyncHandler(async (req, res) => {
     const myId = req.user.id
 
     const showProduct = await prisma.cart.findUnique({
@@ -87,6 +92,7 @@ export const getMyCart = asyncHandler(async (req, res) => {
     res.status(200).json(showProduct)
 })
 
+// Works on Order!
 export const removeItemFromCartOnOrder = async(cartItemIds) => {
 
     if(!cartItemIds) throw new ApiError(400, "No ordered items cartItem id provided")
