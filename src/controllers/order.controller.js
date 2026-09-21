@@ -2,13 +2,13 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
 import { createOrderItem } from "../controllers/orderItem.controller.js"
-import {removeItemFromCartOnOrder} from "../controllers/cart.controller.js"
+import { removeItemFromCartOnOrder } from "../controllers/cart.controller.js"
 // import { title } from "node:process";
 // import { CANCELLED } from "node:dns";
 
 export const createNewOrder = asyncHandler(async (req, res) => {
 
-    const  { cartItemsIds } = req.body  //receiving the cartItems inthe form or array
+    const { cartItemsIds } = req.body  //receiving the cartItems inthe form or array
     if (!cartItemsIds || cartItemsIds.length === 0) throw new ApiError(400, "No items selected")
 
     const userData = await prisma.user.findFirst({
@@ -81,11 +81,11 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         console.log(`Created Order Items for Order id: ${newOrder.id}`)
     })
 
-     console.log("Hellow")
+    console.log("Hellow")
     await removeItemFromCartOnOrder(cartItemsIds, req.user.id).then(() => {
         console.log("Items removed from cart!")
     })
-    res.status(200).json({message: "New Order", order: newOrder})
+    res.status(200).json({ message: "New Order", order: newOrder })
 })
 
 export const getMyOrder = asyncHandler(async (req, res) => {
@@ -121,9 +121,11 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const { cancellationReason } = req.body
     if (!orderId) throw new ApiError(400, "OrderId missing [Required for cancellation!]")
-    const orderExist = await prisma.order.findFirst({
+    if (!cancellationReason) throw new ApiError(400, "Cancellation reason is required!")
+    const orderExist = await prisma.order.findUnique({
         where: { id: parseInt(orderId), userId }
     })
+    if (!orderExist) throw new ApiError(404, "Order not found!")
     const orderUpdate = await prisma.order.update({
         where: {
             id: parseInt(orderId),
