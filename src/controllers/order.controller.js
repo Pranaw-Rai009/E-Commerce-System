@@ -1,14 +1,15 @@
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from "../db/dbConnect.js";
-import createOrderItem from "../controllers/cartItem.controller.js"
-import { title } from "node:process";
-import { CANCELLED } from "node:dns";
+import { createOrderItem } from "../controllers/orderItem.controller.js"
+import {removeItemFromCartOnOrder} from "../controllers/cart.controller.js"
+// import { title } from "node:process";
+// import { CANCELLED } from "node:dns";
 
 export const createNewOrder = asyncHandler(async (req, res) => {
 
-    const cartItemsIds = req.body  //receiving the cartItems inthe form or array
-    if (cartItemsIds.length === 0 || !cartItemsIds) throw new ApiError(400, "No items selected")
+    const  { cartItemsIds } = req.body  //receiving the cartItems inthe form or array
+    if (!cartItemsIds || cartItemsIds.length === 0) throw new ApiError(400, "No items selected")
 
     const userData = await prisma.user.findFirst({
         where: {
@@ -16,7 +17,9 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         }
     })
 
+    console.log("Hellow 1")
     const orderDetailsPromises = cartItemsIds.map(async (itemId) => {
+        console.log("Helo")
         return await prisma.cartItems.findFirst({
             where: {
                 id: itemId,
@@ -34,14 +37,16 @@ export const createNewOrder = asyncHandler(async (req, res) => {
             }
         })
     })
+    console.log("asdfsdf")
     const orderDetail = await Promise.all(orderDetailsPromises)
 
 
+    console.log("asdfasdf")
     const itemBySeller = {} // creating an empty object to store array of differnet sellers
     for (const items of orderDetail) {
         const sellerId = items.product.sellerId
         if (!itemBySeller[sellerId]) itemBySeller[sellerId] = [] //creating a unique key
-        itemBySeller[sellerId].push[items]  // pusing items in key as value
+        itemBySeller[sellerId].push(items)  // pusing items in key as value
     }
 
     let subTotal = 0
@@ -64,21 +69,23 @@ export const createNewOrder = asyncHandler(async (req, res) => {
             totalAmount,
             subTotal,
             shippingAddress: userData.shippingAddress,
-            staus: "PENDING",
-            paymentMethod: "CASH_ON_DELIVERY"
+            status: "PENDING",
+            paymentMetohd: "CASH_ON_DELIVERY"
         }
     })
 
     if (!newOrder) throw new ApiError(500, "New order creation failed")
 
+    console.log("helow1")
     await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() => {
         console.log(`Created Order Items for Order id: ${newOrder.id}`)
     })
 
-    await removeItemFromCartOnOrder(cartItemsIds).then(() => {
+     console.log("Hellow")
+    await removeItemFromCartOnOrder(cartItemsIds, req.user.id).then(() => {
         console.log("Items removed from cart!")
     })
-    res.status(200).json(newOrder)
+    res.status(200).json({message: "New Order", order: newOrder})
 })
 
 export const getMyOrder = asyncHandler(async (req, res) => {
@@ -91,14 +98,14 @@ export const getMyOrder = asyncHandler(async (req, res) => {
             orderItems: {
                 select: {
                     quantity: true,
-                    price: true
-                },
-                include: {
+                    price: true,
                     product: {
-                        title: true,
-                        prodImages: true
+                        select: {
+                            title: true,
+                            prodImages: true
+                        }
                     }
-                }
+                },
             }
         }
     })

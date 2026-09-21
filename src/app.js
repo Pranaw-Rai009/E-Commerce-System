@@ -6,7 +6,7 @@ import userRouter from './routes/user.routes.js'
 import categoryRouter from './routes/category.routes.js'
 import productRouter from './routes/product.routes.js'
 import cartRouter from './routes/cart.routes.js'
-import orderRouter from './routes/order'
+import orderRouter from './routes/order.routes.js'
 const app = express();
 
 app.use(express.json())

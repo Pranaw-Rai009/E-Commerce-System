@@ -93,13 +93,13 @@ export const openMyCart = asyncHandler(async (req, res) => {
 })
 
 // Works on Order!
-export const removeItemFromCartOnOrder = async(cartItemIds) => {
+export const removeItemFromCartOnOrder = async(cartItemIds, userId) => {
 
     if(!cartItemIds) throw new ApiError(400, "No ordered items cartItem id provided")
     
     const myCart = await prisma.cart.findUnique({
         where: {
-            userId: req.user.id
+            userId: userId
         }
     })
     if(!myCart) throw new ApiError(500, "Cart doesn't exist!")
@@ -110,5 +110,5 @@ export const removeItemFromCartOnOrder = async(cartItemIds) => {
             id: {in: cartItemIds}
         }
     })
-    res.status(200).json({message: "Deleted the items after placing order"})
+    return { message: "Items removed after order creation "}
 }
