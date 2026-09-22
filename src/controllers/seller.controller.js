@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 
-export const getMeAllOrders = asyncHandler(async(requ, res) => {
+export const getMeAllMyOrders = asyncHandler(async(requ, res) => {
     const userId = req.user.userId
     const newOrders = await prisma.orderItems.findMany({
         where: {
