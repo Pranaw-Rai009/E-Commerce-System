@@ -24,7 +24,8 @@ export const getMeAllMyOrders = asyncHandler(async (req, res) => {
                     id: true,
                     userId: true,
                     createdAt: true,
-                    status: true
+                    status: true,
+                    paymentStatus: true
                 }
             }
         }
@@ -78,9 +79,7 @@ export const updatePaymentStatus = asyncHandler(async(req, res) => {
     const userId = req.user.id
     const orderExistAndPayed = await prisma.order.findFirst({
         where: {
-            id: parseInt(orderId)
-        },
-        include: {
+            id: parseInt(orderId),
             orderItems: {
                 some: {
                     product: {
@@ -88,18 +87,19 @@ export const updatePaymentStatus = asyncHandler(async(req, res) => {
                     }
                 }
             }
-        }
+        },
+       
     })
 
     if(!orderExistAndPayed) throw new ApiError(401, "Order doesn't exist!")
     if(orderExistAndPayed.status === newPayStatus) throw new ApiError(409, `Payment is already in ${orderExistAndPayed.status} state`)
 
-    const updatePaymentStatus = await prisma.order.findFirst({
+    const updatePaymentStatus = await prisma.order.update({
         where: {
             id: parseInt(orderId)
         },
         data: {
-            status: newPayStatus
+            paymentStatus: newPayStatus
         }
     })
     if(!updatePaymentStatus) throw new ApiError(500, "Error occured while updating the payment status!")
