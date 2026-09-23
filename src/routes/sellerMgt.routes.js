@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { getMeAllMyOrders } from '../controllers/seller.controller.js'
+import { getMeAllMyOrders, updateOrderStatus } from '../controllers/seller.controller.js'
 import { getMyCart } from "../controllers/cart.controller.js";
 import { authAccess } from "../middlewares/authAccess.middleware.js";
+import { isSeller } from "../middlewares/isSeller.middleware.js";
 
 const router = Router()
-router.get("/newOrder", authAccess, getMeAllMyOrders)
+router.get("/newOrder", authAccess, isSeller, getMeAllMyOrders)
+router.patch("/updateStatus/:orderId", authAccess, isSeller, updateOrderStatus)
+
 
 
 export default router

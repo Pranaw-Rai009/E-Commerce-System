@@ -31,36 +31,39 @@ export const getMeAllMyOrders = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "My orders", orders: newOrders })
 })
 
-export const updateOrderStatus = asyncHandler(async(req, res) => {
+export const updateOrderStatus = asyncHandler(async (req, res) => {
     const orderId = req.params.orderId
-    if(!orderId) throw new ApiError(400, "Order Id is missing!")
-    
+    if (!orderId) throw new ApiError(400, "Order Id is missing!")
+
     const { newStatus } = req.body
-    if(!newStatus) throw new ApiError(401, "New Status is required!")
-    
-    const isMyOrder = await prisma.order.findMany({
+    if (!newStatus) throw new ApiError(401, "New Status is required!")
+    const isMyOrder = await prisma.order.findFirst({
         where: {
-            id: orderId,
+            id: parseInt(orderId),
+            // orderItems is an array(an order contains cmany order items),we cant jsut fiter the many item directl as we do for single realtion, so we use some for that
             orderItems: {
-                product: {
-                    sellerId: req.user.id
+                some: {
+                    product: {
+                        sellerId: req.user.id
+                    }
                 }
             }
         }
     })
-    if(!isMyOrder || isMyOrder.length === 0) throw new ApiError(404, "Order not found!")
-    
+    console.log("HI")
+    if (!isMyOrder || isMyOrder.length === 0) throw new ApiError(404, "Order not found!")
+
     const updatingOrder = await prisma.order.update({
         where: {
-            id: orderId
+            id: parseInt(orderId)
         },
         data: {
             status: newStatus
         }
     })
-    if(!updatingOrder) throw new ApiError(500, "Error occured while updating the order")
-    
-    res.status(200).json({message: "Order Status Updated", updatingOrder})
+    if (!updatingOrder) throw new ApiError(500, "Error occured while updating the order")
+
+    res.status(200).json({ message: "Order Status Updated", updatingOrder })
 })
 
 // export const 
