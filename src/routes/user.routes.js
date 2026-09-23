@@ -4,6 +4,7 @@ import { loginUser } from '../controllers/login.controller.js'
 import { refreshAccessToken } from '../controllers/refreshAccessToken.controller.js'
 import { authAccess } from '../middlewares/authAccess.middleware.js'
 import { upload } from '../middlewares/multer.middleware.js'
+import { isAdmin } from '../middlewares/isAdmin.middleware.js'
 const router = Router()
 
 router.post("/register", userRegister)
@@ -18,6 +19,6 @@ router.get("/allSellers/:role", getAllSeller)
 router.get("/allCustomers/:role", getAllCustomer)
 
 // Admin
-router.get("/getData", getAdminData)
+router.get("/getData",authAccess, isAdmin, getAdminData)
 
 export default router
