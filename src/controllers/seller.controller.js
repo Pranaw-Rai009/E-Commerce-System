@@ -1,6 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import ApiError from "../utils/apiError.utils.js";
 import { prisma } from '../db/dbConnect.js'
+import { application } from "express";
+import { parse } from "dotenv";
 
 export const getMeAllMyOrders = asyncHandler(async (req, res) => {
     const userId = req.user.userId
@@ -66,4 +68,41 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "Order Status Updated", updatingOrder })
 })
 
-// export const 
+export const updatePaymentStatus = asyncHandler(async(req, res) => {
+    const orderId = req.params.orderId
+    if(!orderId) throw new ApiError(400, "Order Id missing!")
+    
+    const { newPayStatus } = req.body
+    if(!newPayStatus) throw new ApiError(400, "New Payment status is missing!")
+
+    const userId = req.user.id
+    const orderExistAndPayed = await prisma.order.findFirst({
+        where: {
+            id: parseInt(orderId)
+        },
+        include: {
+            orderItems: {
+                some: {
+                    product: {
+                        sellerId: userId
+                    }
+                }
+            }
+        }
+    })
+
+    if(!orderExistAndPayed) throw new ApiError(401, "Order doesn't exist!")
+    if(orderExistAndPayed.status === newPayStatus) throw new ApiError(409, `Payment is already in ${orderExistAndPayed.status} state`)
+
+    const updatePaymentStatus = await prisma.order.findFirst({
+        where: {
+            id: parseInt(orderId)
+        },
+        data: {
+            status: newPayStatus
+        }
+    })
+    if(!updatePaymentStatus) throw new ApiError(500, "Error occured while updating the payment status!")
+
+    res.status(200).json({message: "Order payement status updated", updated_order:  updatePaymentStatus})
+})
