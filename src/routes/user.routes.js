@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { userRegister, getAllSeller, getAllCustomer, updateUser, updatePassword, updateProfilePic } from '../controllers/user.controller.js'
+import { userRegister, getAllSeller, getAllCustomer, updateUser, updatePassword, updateProfilePic, getAdminData } from '../controllers/user.controller.js'
 import { loginUser } from '../controllers/login.controller.js'
 import { refreshAccessToken } from '../controllers/refreshAccessToken.controller.js'
 import { authAccess } from '../middlewares/authAccess.middleware.js'
@@ -16,5 +16,8 @@ router.patch("/updateProfilePic", authAccess, upload.single("profilePic"), updat
 // for development use only
 router.get("/allSellers/:role", getAllSeller)
 router.get("/allCustomers/:role", getAllCustomer)
+
+// Admin
+router.get("/getData", getAdminData)
 
 export default router

@@ -201,3 +201,13 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
     if (!updateUser) throw new ApiError(500, "Couldn't update profile pic")
     res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
+
+export const getAdminData = asyncHandler(async(req, res) => {
+    const adminData = await prisma.user.findFirst({
+        where: {
+            role: "Admin"
+        }
+    })
+    if(!adminData) throw new ApiError(500, "Error occured while finding admin!")
+    res.status(200).json({message: "Admin Data", adminData})
+})
