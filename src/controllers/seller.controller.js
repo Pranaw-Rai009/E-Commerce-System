@@ -106,3 +106,5 @@ export const updatePaymentStatus = asyncHandler(async(req, res) => {
 
     res.status(200).json({message: "Order payement status updated", updated_order:  updatePaymentStatus})
 })
+
+

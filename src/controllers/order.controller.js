@@ -17,9 +17,7 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         }
     })
 
-    console.log("Hellow 1")
     const orderDetailsPromises = cartItemsIds.map(async (itemId) => {
-        console.log("Helo")
         return await prisma.cartItems.findFirst({
             where: {
                 id: itemId,
@@ -37,11 +35,8 @@ export const createNewOrder = asyncHandler(async (req, res) => {
             }
         })
     })
-    console.log("asdfsdf")
     const orderDetail = await Promise.all(orderDetailsPromises)
 
-
-    console.log("asdfasdf")
     const itemBySeller = {} // creating an empty object to store array of differnet sellers
     for (const items of orderDetail) {
         const sellerId = items.product.sellerId
@@ -76,12 +71,10 @@ export const createNewOrder = asyncHandler(async (req, res) => {
 
     if (!newOrder) throw new ApiError(500, "New order creation failed")
 
-    console.log("helow1")
     await createOrderItem(cartItemsIds, req.user.id, newOrder.id).then(() => {
         console.log(`Created Order Items for Order id: ${newOrder.id}`)
     })
 
-    console.log("Hellow")
     await removeItemFromCartOnOrder(cartItemsIds, req.user.id).then(() => {
         console.log("Items removed from cart!")
     })
