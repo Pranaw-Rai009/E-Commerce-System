@@ -17,7 +17,7 @@ export const userRegister = asyncHandler(async (req, res) => {
     if (!role) throw new ApiError(400, "Role must be declared!")
 
     // User existence check
-    const userExist = await prisma.User.findFirst({
+    const userExist = await prisma.user.findFirst({
         where: {
             OR: [{ userName }, { email }, { mobileNo }]
         }
@@ -32,6 +32,11 @@ export const userRegister = asyncHandler(async (req, res) => {
         }
     }
 
+    // checking if Admin already exist
+    // console.log(userExist.role)
+    // if(userExist.role === role) throw new ApiError(409, "Admin already exist, cannot create new!")
+
+
     // checking phone no validity
     if (mobileNo.length != 10) throw new ApiError(400, "Invalid moblie number")
 
@@ -44,7 +49,7 @@ export const userRegister = asyncHandler(async (req, res) => {
 
     if (role === "Customer") {
         if (!shippingAddress) throw new ApiError(400, "Shipping Address required!")
-        const createUser = await prisma.User.create({
+        const createUser = await prisma.user.create({
             data: {
                 fullName,
                 userName,
@@ -61,7 +66,7 @@ export const userRegister = asyncHandler(async (req, res) => {
 
         res.status(201).json({ message: "User Registered as customer" })
     } else if (role === "Seller") {
-        const createUser = await prisma.User.create({
+        const createUser = await prisma.user.create({
             data: {
                 fullName,
                 userName,
@@ -71,9 +76,30 @@ export const userRegister = asyncHandler(async (req, res) => {
                 role
             }
         })
+        if (!createUser) throw new ApiError(500, "User registration failed!")
         res.status(201).json({ message: "User Registered as seller", createUser })
+    } else if (role === "Admin") {
+        const adminExist = await prisma.user.findFirst({
+            where: {
+                role: "Admin"
+            }
+        })
+        if (adminExist) throw new ApiError(409, "Admin already exist, cannot create new!")
+
+        const createAdmin = await prisma.user.create({
+            data: {
+                fullName,
+                userName,
+                mobileNo,
+                email,
+                password: hashedPassword,
+                role
+            }
+        })
+        if (!createAdmin) throw new ApiError(500, "Admin registration failed!")
+        res.status(200).json({ message: "Created a user with admin role", Admin: createAdmin })
     } else {
-        throw new ApiError(400, "Role must be either Customer or Seller")
+        throw new ApiError(400, "Role must be either Customer or Seller or Admin")
     }
 })
 

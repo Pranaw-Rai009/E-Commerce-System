@@ -18,6 +18,7 @@ datasource db {
 enum UserRole {
   Customer
   Seller
+  Admin
 }
 
 model User {
