@@ -1,15 +1,17 @@
 import { Router } from "express";
-import {userRegister, getAdminData} from '../controllers/user.controller.js'
+import {userRegister, getAdminData, deleteAccount} from '../controllers/user.controller.js'
 import {loginUser} from '../controllers/login.controller.js'
 import { authAccess } from "../middlewares/authAccess.middleware.js";
 import { isAdmin } from "../middlewares/isAdmin.middleware.js";
 import { refreshAccessToken } from "../controllers/refreshAccessToken.controller.js";
+import { isAcOwner } from "../middlewares/isAccountOwner.middleware.js";
 const router = Router()
 
 router.post("/register", userRegister)
 router.post("/login", loginUser)
 router.post("/refresh", authAccess, refreshAccessToken)
 router.get("/getData", authAccess, isAdmin, getAdminData)
+router.delete("/delete/:accountId", authAccess, isAcOwner, deleteAccount)
 
 
 export default router

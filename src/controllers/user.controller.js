@@ -202,14 +202,25 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
 
+export const deleteAccount = asyncHandler(async (req, res) => {
+    const userId = req.user.id
+    const accountId = req.params.acId
+    if (!accountId) throw new ApiError(400, "Account Id is missing")
+    await prisma.user.delete({
+        where: {
+            id: accountId
+        }
+    })
+    res.status(200).json({message: "Account Deleted"})
+})
 
 // Admin Controllers
-export const getAdminData = asyncHandler(async(req, res) => {
+export const getAdminData = asyncHandler(async (req, res) => {
     const adminData = await prisma.user.findFirst({
         where: {
             role: "Admin"
         }
     })
-    if(!adminData) throw new ApiError(500, "Error occured while finding admin!")
-    res.status(200).json({message: "Admin Data", adminData})
+    if (!adminData) throw new ApiError(500, "Error occured while finding admin!")
+    res.status(200).json({ message: "Admin Data", adminData })
 })
