@@ -14,7 +14,8 @@ router.post("/refreshAccessToken", refreshAccessToken)
 router.post("/update", authAccess, updateUser)
 router.post("/updatePassword", authAccess, updatePassword)
 router.patch("/updateProfilePic", authAccess, upload.single("profilePic"), updateProfilePic)
-router.patch("/delete/:accountId", authAccess, isAcOwner, deleteAccount)
+
+router.delete("/delete/:accountId", authAccess, isAcOwner, deleteAccount)
 
 // for development use only
 router.get("/allSellers/:role", getAllSeller)

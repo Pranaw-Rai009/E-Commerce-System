@@ -203,16 +203,45 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
 })
 
 export const deleteAccount = asyncHandler(async (req, res) => {
-    const userId = req.user.id
-    const accountId = req.params.acId
-    if (!accountId) throw new ApiError(400, "Account Id is missing")
-    await prisma.user.delete({
+    const accId = req.owner.id
+    if (!accId) throw new ApiError(400, "Account Id is missing")
+
+    const existCart = await prisma.cart.findUnique({
         where: {
-            id: accountId
+            userId: accId
         }
     })
-    res.status(200).json({message: "Account Deleted"})
+    if (!existCart) throw new ApiError(404, "Cart not found!")
+    await prisma.cart.delete({
+        where: {
+            userId: accId
+        }
+    })
+
+    const existRefreshToken = await prisma.refreshToken.findMany({
+        where: {
+            userId: accId
+        }
+    })
+    if(existRefreshToken) {
+        await prisma.refreshToken.deleteMany({
+            where: {
+                userId: accId
+            } 
+        })
+    }
+    await prisma.user.delete({
+        where: {
+            id: accId
+        }
+    })
+    console.log("Hello")
+    res.status(200).json({ message: "Account Deleted" })
 })
+//  "Error message: \nInvalid `prisma.user.delete()` invocation:\n\n\nForeign key constraint violated on the constraint: `Cart_userId_fkey`" => what it says: you're trying to delete a User, but there's a Cart record still REFERENCING that user (via Cart.userId) — and Postgres REFUSES to delete a PARENT row while CHILD rows still point at it, since that would leave the CHILD with a dangling, invalid reference.
+// Deleting a User requires FIRST deleting (or reassigning) EVERYTHING that references them, in the CORRECT order
+
+
 
 // Admin Controllers
 export const getAdminData = asyncHandler(async (req, res) => {

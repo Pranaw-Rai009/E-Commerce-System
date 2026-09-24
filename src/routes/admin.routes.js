@@ -9,9 +9,12 @@ const router = Router()
 
 router.post("/register", userRegister)
 router.post("/login", loginUser)
-router.post("/refresh", authAccess, refreshAccessToken)
+router.post("/refresh", refreshAccessToken)
+
 router.get("/getData", authAccess, isAdmin, getAdminData)
+
 router.delete("/delete/:accountId", authAccess, isAcOwner, deleteAccount)
+// router.post("/updateAcPassword".
 
 
 export default router
