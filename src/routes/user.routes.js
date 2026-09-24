@@ -18,7 +18,5 @@ router.patch("/updateProfilePic", authAccess, upload.single("profilePic"), updat
 router.get("/allSellers/:role", getAllSeller)
 router.get("/allCustomers/:role", getAllCustomer)
 
-// Admin
-router.get("/getData",authAccess, isAdmin, getAdminData)
 
 export default router

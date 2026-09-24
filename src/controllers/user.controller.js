@@ -202,6 +202,8 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
 
+
+// Admin Controllers
 export const getAdminData = asyncHandler(async(req, res) => {
     const adminData = await prisma.user.findFirst({
         where: {
