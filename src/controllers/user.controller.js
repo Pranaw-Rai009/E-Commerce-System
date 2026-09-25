@@ -202,22 +202,60 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
 
+// untested
 export const deleteAccount = asyncHandler(async (req, res) => {
     const accId = req.owner.id
     if (!accId) throw new ApiError(400, "Account Id is missing")
 
+    // delete all cartItems and then cart
     const existCart = await prisma.cart.findUnique({
         where: {
             userId: accId
         }
     })
     if (!existCart) throw new ApiError(404, "Cart not found!")
+
+    const existCartItems = await prisma.cartItems.findMany({
+        where: {
+            cartId: existCart.id
+        }
+    })
+    if(existCartItems) {
+        await prisma.cartItems.deleteMany({
+            where: {
+                cartId: existCart.id
+            }
+        })
+    }
     await prisma.cart.delete({
         where: {
             userId: accId
         }
     })
 
+
+    // delete all orderItems and order
+    const allOrder = await prisma.order.findMany({
+        where: {
+            userId: req.user.id
+        }
+    })
+    if(allOrder) {
+        for(const order of allOrder) {
+            await prisma.orderItems.deleteMany({
+                where: {
+                    orderId: order.id
+                }
+            })
+        }
+        prisma.order.delete({
+            where: {
+                userId: req.user.id
+            }
+        })
+    } 
+
+    // delete all refresh tokens
     const existRefreshToken = await prisma.refreshToken.findMany({
         where: {
             userId: accId
@@ -230,6 +268,8 @@ export const deleteAccount = asyncHandler(async (req, res) => {
             } 
         })
     }
+
+    // finally delete the user
     await prisma.user.delete({
         where: {
             id: accId
@@ -252,4 +292,29 @@ export const getAdminData = asyncHandler(async (req, res) => {
     })
     if (!adminData) throw new ApiError(500, "Error occured while finding admin!")
     res.status(200).json({ message: "Admin Data", adminData })
+})
+
+export const updatePasswordByAdmin = asyncHandler(async (req, res) => {
+    const userId = req.params.userId
+    const user = await prisma.User.findFirst({ where: { id: userId } })
+
+    const hashedPassword = user.password
+    const { oldPassword, newPassword1, newPassword2 } = req.body
+
+    const isCorrectOldPassword = await isModified(oldPassword, hashedPassword)
+
+    if (!isCorrectOldPassword) throw new ApiError(401, "Incorrect Password")
+
+    if (newPassword1.length < 12) throw new ApiError(400, "New password must be at least 12 character long")
+
+    if (newPassword2.length < 12) throw new ApiError(400, "New password must be at least 12 character long")
+
+    if (newPassword1 != newPassword2) throw new ApiError(400, "New Passwords don't match")
+
+    const hashNewPassword = await hashPassword(newPassword1)
+    const update = await prisma.User.update({
+        where: { id: userId },
+        data: { password: hashNewPassword }
+    })
+    res.status(200).json({ message: "Password Updated" })
 })
