@@ -161,7 +161,7 @@ export const updateUser = asyncHandler(async (req, res) => {
 
 export const updatePassword = asyncHandler(async (req, res) => {
     const userId = req.user.id
-    const user = await prisma.User.findFirst({ where: { id: userId } })
+    const user = await prisma.User.findFirst({ where: { id: parseInt(userId) } })
 
     const hashedPassword = user.password
     const { oldPassword, newPassword1, newPassword2 } = req.body
@@ -178,7 +178,7 @@ export const updatePassword = asyncHandler(async (req, res) => {
 
     const hashNewPassword = await hashPassword(newPassword1)
     const update = await prisma.User.update({
-        where: { id: userId },
+        where: { id: parseInt(userId) },
         data: { password: hashNewPassword }
     })
     res.status(200).json({ message: "Password Updated" })
@@ -297,7 +297,7 @@ export const getAdminData = asyncHandler(async (req, res) => {
 
 export const updatePasswordByAdmin = asyncHandler(async (req, res) => {
     const userId = req.params.userId
-    const user = await prisma.User.findFirst({ where: { id: userId } })
+    const user = await prisma.User.findUnique({ where: { id: parseInt(userId) } })
 
     const hashedPassword = user.password
     const { oldPassword, newPassword1, newPassword2 } = req.body
@@ -314,8 +314,10 @@ export const updatePasswordByAdmin = asyncHandler(async (req, res) => {
 
     const hashNewPassword = await hashPassword(newPassword1)
     const update = await prisma.User.update({
-        where: { id: userId },
+        where: { id: parseInt(userId) },
         data: { password: hashNewPassword }
     })
     res.status(200).json({ message: "Password Updated" })
 })
+
+
