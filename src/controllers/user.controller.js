@@ -234,6 +234,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
     })
 
 
+    // On next project implement onDelete: Cascade instead of manual delete
     // delete all orderItems and order
     const allOrder = await prisma.order.findMany({
         where: {
