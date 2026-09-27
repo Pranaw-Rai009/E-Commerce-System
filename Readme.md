@@ -4,16 +4,20 @@ A monolithic e-commerce backend built from scratch with Node.js, Express, Postgr
 
 This project was built to deliberately practice real relational data modeling, transaction-safe checkout logic, and JWT-based authentication with access/refresh tokens — without relying on an ORM's defaults to hide the underlying database design decisions.
 
+
 *** Tech Stack ***
-Layer	        Technology
-Runtime	        Node.js
-Framework	    Express
-Database	    PostgreSQL
-ORM	            Prisma (prisma-client-js)
-Auth	        JWT (access + refresh tokens), bcrypt
-Cookies	        cookie-parser (httpOnly refresh token)
+
+
+Runtime = Node.js
+Framework = Express
+Database = PostgreSQL
+ORM = Prisma (prisma-client-js)
+Auth = JWT (access + refresh tokens), bcrypt
+Cookies = cookie-parser (httpOnly refresh token)
+
 
 *** Features ***
+
 1.Authentication
 Registration with role selection (Customer or Seller)
 Role-specific required fields (e.g. shippingAddress required only for Customers)
@@ -49,33 +53,35 @@ One review per user per product (enforced via a composite unique constraint)
 
 
 *** Project Strucutre ***
+
 src/
- > controllers/ - Request Handlers
- > db/ - Prisma client instatiation
- > generated/ - Auto-generated Prisma Client (gitignored)
- > middlewares/ - Auth, error middlewares
- > models/ - Data model diagram
- > routes/ - Express routers
- > utils/ - ApiError, password hashing etc
- > app.js - Express app config
- > index.js - Entry point - DB connection + server start
+ - controllers/ - Request Handlers
+ - db/ - Prisma client instatiation
+ - generated/ - Auto-generated Prisma Client (gitignored)
+ - middlewares/ - Auth, error middlewares
+ - models/ - Data model diagram
+ - routes/ - Express routers
+ - utils/ - ApiError, password hashing etc
+ - app.js - Express app config
+ - index.js - Entry point - DB connection + server start
 
 prisma/
- > schema.prisma - Data model define
- > migrations/ - Version controller schema changed history
+ - schema.prisma - Data model define
+ - migrations/ - Version controller schema changed history
 
 
 Getting Started
 
 *** Prerequisites ***
+
 Node.js (v18+)
 PostgreSQL running locally (or a hosted instance, e.g. Neon)
 
 Installation cmd:
-> bash
-> git clone <your-repo-url>
-> cd <project-folder>
-> npm install
+
+- git clone <your-repo-url>
+- cd <project-folder>
+- npm install
 
 *** Environment Variables ***
 
@@ -102,12 +108,12 @@ CLOUDINARY_URL=sercret_url
 
 *** Database Setup ***
 
-> npx prisma migrate dev
-> npx prisma generate
+- npx prisma migrate dev
+- npx prisma generate
 
 Run the server
 
-> npm run dev
+- npm run dev
 
 ### Author ###
 
