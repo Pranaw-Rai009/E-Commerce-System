@@ -237,7 +237,8 @@ export const deleteCustomerAccount = asyncHandler(async (req, res) => {
     // delete all orderItems and order
     const allOrder = await prisma.order.findMany({
         where: {
-            userId: req.user.id
+            userId: req.user.id,
+            status: "PENDING"
         }
     })
     if(allOrder) {
@@ -248,11 +249,13 @@ export const deleteCustomerAccount = asyncHandler(async (req, res) => {
                 }
             })
         }
-        prisma.order.delete({
-            where: {
-                userId: req.user.id
-            }
-        })
+        for(const order of allOrder) {
+            await prisma.order.delete({
+                where: {
+                    id: req.user.id
+                }
+            })
+        }
     } 
 
     // delete all refresh tokens
