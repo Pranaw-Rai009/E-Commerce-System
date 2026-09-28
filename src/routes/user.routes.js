@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { userRegister, getAllSeller, getAllCustomer, updateUser, updatePassword, updateProfilePic, getAdminData, deleteAccount } from '../controllers/user.controller.js'
+import { userRegister, getAllSeller, getAllCustomer, updateUser, updatePassword, updateProfilePic, getAdminData, deleteCustomerAccount } from '../controllers/user.controller.js'
 import { loginUser } from '../controllers/login.controller.js'
 import { refreshAccessToken } from '../controllers/refreshAccessToken.controller.js'
 import { authAccess } from '../middlewares/authAccess.middleware.js'
@@ -15,7 +15,7 @@ router.post("/update", authAccess, updateUser)
 router.post("/updatePassword", authAccess, updatePassword)
 router.patch("/updateProfilePic", authAccess, upload.single("profilePic"), updateProfilePic)
 
-router.delete("/delete/:accountId", authAccess, isAcOwner, deleteAccount)
+router.delete("/delete/:accountId", authAccess, isAcOwner, deleteCustomerAccount)
 
 // for development use only
 router.get("/allSellers/:role", getAllSeller)

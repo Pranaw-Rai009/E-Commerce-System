@@ -202,7 +202,7 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Profile Picture Updated", user: updateUser })
 })
 
-export const deleteAccount = asyncHandler(async (req, res) => {
+export const deleteCustomerAccount = asyncHandler(async (req, res) => {
     const accId = req.owner.id
     if (!accId) throw new ApiError(400, "Account Id is missing")
 
@@ -281,7 +281,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
 //  "Error message: \nInvalid `prisma.user.delete()` invocation:\n\n\nForeign key constraint violated on the constraint: `Cart_userId_fkey`" => what it says: you're trying to delete a User, but there's a Cart record still REFERENCING that user (via Cart.userId) — and Postgres REFUSES to delete a PARENT row while CHILD rows still point at it, since that would leave the CHILD with a dangling, invalid reference.
 // Deleting a User requires FIRST deleting (or reassigning) EVERYTHING that references them, in the CORRECT order
 
-export const deleteSeller = asyncHandler (async(req, res))
+// export const deleteSeller = asyncHandler (async(req, res))
 
 // Admin Controllers
 export const getAdminData = asyncHandler(async (req, res) => {
