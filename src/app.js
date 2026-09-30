@@ -20,9 +20,9 @@ app.use(cors({
     credentials: true
 }))
 
-app.use(express.json({urlencoded: "16kb", extended: true}))
-app.use(express.json({limit: "16kb"}))
-app.use(express.json({static: "Public"}))
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
 
 // Main routes
 app.use("/api/user", userRouter)

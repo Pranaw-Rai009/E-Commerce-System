@@ -36,7 +36,7 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         })
     })
     const orderDetail = await Promise.all(orderDetailsPromises)
-
+    
     const itemBySeller = {} // creating an empty object to store array of differnet sellers
     for (const items of orderDetail) {
         const sellerId = items.product.sellerId
