@@ -16,5 +16,4 @@ router.get("/getData", authAccess, isAdmin, getAdminData)
 router.delete("/delete/:accountId", authAccess, isAdmin, deleteCustomerAccount)
 router.post("/updateAcPassword/:userId",authAccess, isAdmin,  updatePasswordByAdmin)
 
-
 export default router
